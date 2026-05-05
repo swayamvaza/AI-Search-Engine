@@ -3,7 +3,7 @@
 const itemSchema = new mongoose.Schema({
     title: String,
     content: String,
-    embedding: [Number] // This must be an array of numbers
+    embedding: [Number]
 });
 
 module.exports = mongoose.model('Item', itemSchema);

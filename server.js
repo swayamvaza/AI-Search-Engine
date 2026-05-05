@@ -1,96 +1,62 @@
-﻿const express = require('express');
-const mongoose = require('mongoose');
+﻿const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
-require('dotenv').config({path: path.resolve(__dirname, './src/token.env')}); // FIXED PATH
-
+require('dotenv').config({path: path.resolve(__dirname, './src/token.env')});
 const Item = require('./Item');
+const MONGO_URL = "mongodb+srv://Kael:aA1bB211022005@test.gqqiiqc.mongodb.net/?appName=TEST";
+const OLLAMA_URL = "http://localhost:11434/api/embeddings";
+const express = require('express');
+
+if (!process.env.HF_TOKEN) {
+    process.exit(1);
+}
+
+mongoose.connect(MONGO_URL)
+    .then(() => console.log("Connected to MongoDB"))
+    .catch(err => console.error("Connection Error", err));
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 1. CONFIGURATION
-const MONGO_URL = "mongodb+srv://Kael:aA1bB211022005@test.gqqiiqc.mongodb.net/?appName=TEST";
-const HF_API_URL = "https://api-inference.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2";
-
-// SILLY MISTAKE CHECK: Fail fast if token is missing
-if (!process.env.HF_TOKEN) {
-    console.error("❌ ERROR: HF_TOKEN is missing! Check your src/.env file.");
-    process.exit(1);
-}
-
-// 2. DATABASE CONNECTION
-mongoose.connect(MONGO_URL)
-    .then(() => console.log("✅ Connected to MongoDB!"))
-    .catch(err => console.error("❌ Could not connect to MongoDB", err));
-
-// 3. ROUTES
 app.get('/', (req, res) => {
-    res.send("AI Search Backend is Running!");
+    res.send("Running");
 });
 
-// ADD ITEM ROUTE
-
 app.post('/add-item', async (req, res) => {
-    console.log("--- Debug Check ---");
-    console.log("Token exists:", !!process.env.HF_TOKEN);
-    console.log("Request Body:", req.body);
     try {
-        const {title, content} = req.body;
-
-        const response = await fetch(HF_API_URL, {
+        const { title, content } = req.body;
+        const response = await fetch(OLLAMA_URL, {
             method: "POST",
-            headers: {
-                "Authorization": `Bearer ${process.env.HF_TOKEN}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({inputs: content}),
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                model: "mxbai-embed-large",
+                prompt: content
+            }),
         });
-
-        // 1. Get the raw response first
-        const result = await response.json();
-
-        // 2. Check if the AI returned an error instead of numbers
-        if (result.error) {
-            console.log("AI Model Status:", result.error);
-            return res.status(503).json({
-                message: "AI is waking up, please wait 20 seconds and try again.",
-                details: result.error
-            });
-        }
-
-        // 3. If we got numbers, save to MongoDB
-        const newItem = new Item({title, content, embedding: result});
+        const data = await response.json();
+        const embedding = data.embedding;
+        const newItem = new Item({ title, content, embedding });
         await newItem.save();
-
-        res.status(201).json({message: "Success! Item saved."});
-
+        res.status(201).json({ message: "Success" });
     } catch (err) {
-        console.error("CRASH LOG:", err);
-        res.status(500).json({error: "Server crashed. Check terminal."});
+        res.status(500).json({ error: "Ollama Error" });
     }
 });
 
-// SEARCH ROUTE
 app.post('/search', async (req, res) => {
     try {
         const {query} = req.body;
-
-        const response = await fetch(HF_API_URL, {
+        const response = await fetch(OLLAMA_URL, {
             method: "POST",
-            headers: {
-                "Authorization": `Bearer ${process.env.HF_TOKEN}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({inputs: query}),
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                model: "mxbai-embed-large",
+                prompt: query
+            }),
         });
-
-        const queryVector = await response.json();
-
-        if (queryVector.error) {
-            return res.status(500).json({error: queryVector.error});
-        }
+        const data = await response.json();
+        const queryVector = data.embedding;
 
         const results = await Item.aggregate([
             {
@@ -101,18 +67,22 @@ app.post('/search', async (req, res) => {
                     "numCandidates": 10,
                     "limit": 3
                 }
+            },
+            {
+                "$project": {
+                    "title": 1,
+                    "content": 1,
+                    "score": { "$meta": "vectorSearchScore" }
+                }
             }
         ]);
-
         res.json(results);
     } catch (err) {
-        console.error("Search Crash Log:", err);
-        res.status(500).json({error: "Search failed."});
+        res.status(500).json({error: "Search failed"});
     }
 });
 
-// 4. START SERVER
 const PORT = 5000;
 app.listen(PORT, () => {
-    console.log(`🚀 Server is moving on http://localhost:${PORT}`);
+    console.log(`Server at ${PORT}`);
 });
