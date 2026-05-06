@@ -7,10 +7,6 @@ const MONGO_URL = "mongodb+srv://Kael:aA1bB211022005@test.gqqiiqc.mongodb.net/?a
 const OLLAMA_URL = "http://localhost:11434/api/embeddings";
 const express = require('express');
 
-if (!process.env.HF_TOKEN) {
-    process.exit(1);
-}
-
 mongoose.connect(MONGO_URL)
     .then(() => console.log("Connected to MongoDB"))
     .catch(err => console.error("Connection Error", err));
