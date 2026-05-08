@@ -111,6 +111,6 @@ If the highest similarity score falls below a dynamic threshold (e.g., **0.67**)
 
 <p align="center">
   <i>Developed by Swayam Kumar</i><br>
-  <strong>LynxEngine v1.02</strong>
+  <strong>LynxEngine v0.1-alpha</strong>
 </p>
 
