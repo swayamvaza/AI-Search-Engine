@@ -1,4 +1,4 @@
-# 🚀 LynxEngine: Neural Data Retrieval System
+#  LynxEngine: Neural Data Retrieval System
 
 **LynxEngine** is a high-performance, AI-powered semantic search engine built on the MERN stack. Unlike traditional
 keyword-based search, LynxEngine understands user **intent** using high-dimensional vector embeddings and features an
@@ -6,7 +6,7 @@ automated "Hunter" logic that scrapes and indexes Wikipedia in real-time when lo
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 | Component     | Technology                                   |
 |:--------------|:---------------------------------------------|
@@ -18,7 +18,7 @@ automated "Hunter" logic that scrapes and indexes Wikipedia in real-time when lo
 
 ---
 
-## 🧠 System Architecture
+##  System Architecture
 
 LynxEngine operates through a **Three-Stage Retrieval Pipeline** designed for maximum precision:
 
@@ -44,7 +44,7 @@ If the highest similarity score falls below a dynamic threshold (e.g., **0.67**)
 
 ---
 
-## ✨ Key Features
+##  Key Features
 
 * **Vector Stability Check:** Uses a custom scoring algorithm to determine if search results are high-quality or if a
   fresh crawl is required.
@@ -56,7 +56,7 @@ If the highest similarity score falls below a dynamic threshold (e.g., **0.67**)
 
 ---
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 
@@ -100,7 +100,7 @@ If the highest similarity score falls below a dynamic threshold (e.g., **0.67**)
 
 ---
 
-## 👨‍💻 Author
+##  Author
 
 | **Swayam Kumar** | [![](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/swayamvaza) |
 | :--- | :--- |
